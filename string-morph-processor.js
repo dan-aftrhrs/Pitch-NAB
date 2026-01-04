@@ -19,10 +19,11 @@ class StringMorphProcessor extends AudioWorkletProcessor {
     this.lpState = 0;
     
     // Body Resonances (Approximate Cello Formants)
+    // Lower Q values to capture broader harmonics and prevent "whistling"
     this.bodyFilters = [
-      { f: 110, q: 6, gain: 1.4, z1: 0, z2: 0, y1: 0, y2: 0 },
-      { f: 185, q: 5, gain: 1.1, z1: 0, z2: 0, y1: 0, y2: 0 },
-      { f: 310, q: 4, gain: 0.9, z1: 0, z2: 0, y1: 0, y2: 0 }
+      { f: 110, q: 4, gain: 1.6, z1: 0, z2: 0, y1: 0, y2: 0 },
+      { f: 185, q: 3.5, gain: 1.2, z1: 0, z2: 0, y1: 0, y2: 0 },
+      { f: 310, q: 3, gain: 1.0, z1: 0, z2: 0, y1: 0, y2: 0 }
     ];
 
     this.dc_x1 = 0;
@@ -37,8 +38,7 @@ class StringMorphProcessor extends AudioWorkletProcessor {
     return ((x >>> 0) / 4294967295) * 2 - 1;
   }
 
-  // Bow Table: Maps velocity differential to friction force
-  // A classic stick-slip approximation
+  // Classic Bow Table mapping for stick-slip friction
   bowTable(v) {
     const sample = Math.abs(v) + 0.75;
     return Math.pow(sample, -4.0);
@@ -81,8 +81,8 @@ class StringMorphProcessor extends AudioWorkletProcessor {
 
     const delaySamples = this.sr / freq;
     
-    // Higher sustain for cello (right morph)
-    let loopGain = 0.994 + (damping * 0.0055);
+    // Smooth loop gain transition
+    let loopGain = 0.994 + (damping * 0.005);
     if (loopGain > 0.9997) loopGain = 0.9997;
 
     const lpCoeff = 0.06 + (tension * 0.88);
@@ -97,42 +97,44 @@ class StringMorphProcessor extends AudioWorkletProcessor {
 
       let interaction = 0;
       if (gate > 0.001) {
-        // Cello friction logic
-        const bowVelocity = 0.05 + (gate * excitation * 0.25);
-        const bowPressure = 0.4 + (excitation * 0.5);
+        // Friction model
+        const bowVelocity = 0.06 + (gate * excitation * 0.3);
+        const bowPressure = 0.35 + (excitation * 0.55);
         const velDiff = bowVelocity - sig;
         
-        // Friction = Velocity Diff * BowTable(Velocity Diff) * Pressure
+        // Apply friction force
         const friction = velDiff * this.bowTable(velDiff) * bowPressure;
         
-        // Slightly higher noise floor for mechanical grit
-        const bowNoise = this.noise() * 0.006 * gate;
+        // Mechanical texture
+        const bowNoise = this.noise() * 0.008 * gate;
         interaction = friction + bowNoise;
       }
 
       let nextVal = (sig + interaction) * loopGain;
-      nextVal = Math.max(-1.5, Math.min(1.5, nextVal));
+      // Internal hard limit to prevent instability
+      nextVal = Math.max(-1.8, Math.min(1.8, nextVal));
       
       this.lpState = (lpCoeff * nextVal) + ((1 - lpCoeff) * this.lpState);
       
       this.delayLine[this.idx] = this.lpState;
       this.idx = (this.idx + 1) % this.maxDelay;
 
-      // Body Resonances
+      // Resonance modeling
       let bodySig = 0;
-      const saturation = this.softClip(this.lpState * 1.5);
+      const saturation = this.softClip(this.lpState * 1.6);
       for (const filter of this.bodyFilters) {
         bodySig += this.processBiquad(saturation, filter, filter.f, filter.q) * filter.gain;
       }
 
-      const blend = 0.35 + (material * 0.6);
+      const blend = 0.3 + (material * 0.65);
       let output = (this.lpState * (1 - blend)) + (bodySig * blend);
 
+      // Final DC removal and gain
       const dc = output - this.dc_x1 + 0.996 * this.dc_y1;
       this.dc_x1 = output;
       this.dc_y1 = dc;
 
-      out[i] = this.softClip(dc * 1.5) * 0.55;
+      out[i] = this.softClip(dc * 1.8) * 0.5;
     }
 
     return true;

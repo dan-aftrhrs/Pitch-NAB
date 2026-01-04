@@ -41,14 +41,20 @@ export const StringsEngine: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const requestRef = useRef<number>(0);
   const rhythmInterval = useRef<number | null>(null);
+  const morphRef = useRef(morph);
   const lastTriggerTime = useRef(0);
 
-  // Parameter Mapping
+  // Sync ref for interval access
+  useEffect(() => {
+    morphRef.current = morph;
+  }, [morph]);
+
+  // Parameter Mapping (Non-linear for smoother character shifts)
   const params = {
     tension: 0.85 - (morph * 0.65),      // 0.85 (Piano) -> 0.2 (Cello)
-    damping: 0.2 + (morph * 0.75),      // 0.2 (Piano) -> 0.95 (Cello)
-    excitation: 0.8 - (morph * 0.25),   // 0.8 (Piano) -> 0.55 (Cello - Bow Pressure)
-    material: 0.15 + (morph * 0.8)      // 0.15 (Piano) -> 0.95 (Cello/Body)
+    damping: 0.15 + (morph * 0.8),      // 0.15 (Piano) -> 0.95 (Cello)
+    excitation: 0.8 - (morph * 0.2),    // 0.8 (Piano) -> 0.6 (Cello)
+    material: 0.1 + (morph * 0.85)      // 0.1 (Piano) -> 0.95 (Cello)
   };
 
   const initAudio = async () => {
@@ -89,7 +95,7 @@ export const StringsEngine: React.FC = () => {
     if (isLoaded) updateNodeParams(params);
   }, [morph, isLoaded]);
 
-  // Rhythm Engine
+  // Rhythm Engine: Improved to handle piano double-triggers and cello sustain reliably
   useEffect(() => {
     if (isActive && isLoaded) {
       const trigger = () => {
@@ -97,39 +103,43 @@ export const StringsEngine: React.FC = () => {
         const gate = workletNode.current.parameters.get('gate');
         const now = audioCtx.current.currentTime;
         
-        // Prevent double triggers within 200ms
+        // Debounce to prevent double notes
         if (now - lastTriggerTime.current < 0.2) return;
         lastTriggerTime.current = now;
 
-        if (morph < 0.7) {
-          // Piano Pluck
+        const currentMorph = morphRef.current;
+
+        if (currentMorph < 0.7) {
+          // Piano Mode: Crisp attack and decay
           gate?.cancelScheduledValues(now);
           gate?.setValueAtTime(0, now);
-          gate?.setTargetAtTime(1.0, now + 0.001, 0.004);
-          const release = 0.04 + (0.12 * morph);
-          gate?.setTargetAtTime(0, now + release, 0.04);
+          gate?.setTargetAtTime(1.0, now + 0.002, 0.008);
+          const release = 0.05 + (0.15 * currentMorph);
+          gate?.setTargetAtTime(0, now + release, 0.05);
         } else {
-          // Cello Sustain
+          // Cello Mode: Sustained bow friction
           gate?.cancelScheduledValues(now);
-          // Initial "kick" to start oscillation
-          gate?.setValueAtTime(1.2, now); 
+          // Initial pressure kick to overcome starting friction
+          gate?.setValueAtTime(1.3, now); 
           gate?.setTargetAtTime(1.0, now + 0.2, 0.4);
         }
       };
 
-      if (morph < 0.7) {
+      const isPiano = morph < 0.7;
+
+      if (isPiano) {
         if (rhythmInterval.current) clearInterval(rhythmInterval.current);
         rhythmInterval.current = window.setInterval(trigger, 1800);
         trigger();
       } else {
         if (rhythmInterval.current) clearInterval(rhythmInterval.current);
-        trigger(); 
+        trigger(); // Immediate sustain
       }
     } else {
       if (rhythmInterval.current) clearInterval(rhythmInterval.current);
     }
     return () => { if (rhythmInterval.current) clearInterval(rhythmInterval.current); };
-  }, [isActive, morph, isLoaded]);
+  }, [isActive, isLoaded, morph < 0.7]); // Only re-run when mode changes
 
   const toggleEngine = async () => {
     if (!isLoaded) await initAudio();
@@ -141,7 +151,7 @@ export const StringsEngine: React.FC = () => {
     if (!nextState && workletNode.current && audioCtx.current) {
       const gate = workletNode.current.parameters.get('gate');
       gate?.cancelScheduledValues(audioCtx.current.currentTime);
-      gate?.setTargetAtTime(0, audioCtx.current.currentTime, 0.2);
+      gate?.setTargetAtTime(0, audioCtx.current.currentTime, 0.15);
     }
   };
 
@@ -154,7 +164,7 @@ export const StringsEngine: React.FC = () => {
 
     let phase = 0;
     const animate = () => {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       const width = canvas.width;
@@ -163,27 +173,28 @@ export const StringsEngine: React.FC = () => {
       
       ctx.beginPath();
       const hue = 25 + (morph * 25);
-      const sat = 30 + (morph * 50);
-      const color = isActive ? `hsla(${hue}, ${sat}%, 70%, 0.8)` : '#27272a';
+      const sat = 30 + (morph * 55);
+      const color = isActive ? `hsla(${hue}, ${sat}%, 70%, 0.9)` : '#27272a';
       
       ctx.strokeStyle = color;
-      ctx.lineWidth = 1.8 + (params.material * 1.5);
+      ctx.lineWidth = 2.0 + (params.material * 1.5);
       
-      const amplitude = isActive ? (params.excitation * 42 * (1 - params.damping * 0.42)) : 2;
+      const amplitude = isActive ? (params.excitation * 45 * (1 - params.damping * 0.45)) : 2;
       const freqVis = 1.3 + (params.tension * 4.5);
       
       ctx.moveTo(0, centerY);
       for (let x = 0; x <= width; x++) {
         const normalizedX = x / width;
         const envelope = Math.sin(normalizedX * Math.PI);
-        const y = centerY + Math.sin(normalizedX * Math.PI * freqVis + phase) * amplitude * envelope;
+        const jitter = morph > 0.6 ? (Math.random() - 0.5) * 0.5 : 0;
+        const y = centerY + Math.sin(normalizedX * Math.PI * freqVis + phase) * (amplitude + jitter) * envelope;
         ctx.lineTo(x, y);
       }
       ctx.stroke();
       
       if (isActive) {
-        phase += 0.07 + (params.tension * 0.18);
-        ctx.shadowBlur = 12;
+        phase += 0.08 + (params.tension * 0.2);
+        ctx.shadowBlur = 10;
         ctx.shadowColor = color;
       }
 
@@ -197,9 +208,10 @@ export const StringsEngine: React.FC = () => {
   return (
     <div className="flex flex-col items-center gap-12 py-16">
       <div className="text-center space-y-6 max-w-xl px-6">
-        <h3 className="text-4xl md:text-5xl serif italic font-light tracking-tight">The String Engine</h3>
+        <h3 className="text-4xl md:text-5xl serif italic font-light tracking-tight">The String Engine <span className="text-xs uppercase tracking-widest text-zinc-400 align-middle ml-2">(Experimental)</span></h3>
         <p className="text-zinc-500 font-light text-sm md:text-base leading-relaxed">
           Physical modeling of a single C4 string. Move from the brittle, percussive strike of a <strong>Muted Piano</strong> to the deep, resonant sustain of a <strong>Bowed Cello</strong>.
+          <br/><span className="text-[10px] text-zinc-400 italic">May not be fully supported on all mobile devices.</span>
         </p>
       </div>
 
@@ -248,11 +260,11 @@ export const StringsEngine: React.FC = () => {
         </div>
 
         {/* Read-Only Visual Knobs */}
-        <div className="grid grid-cols-4 gap-4 mb-10 opacity-60">
+        <div className="grid grid-cols-4 gap-4 mb-10 opacity-50">
           <ReadOnlyKnob label="Tension" value={params.tension} color="#22c55e" />
           <ReadOnlyKnob label="Damping" value={params.damping} color="#3b82f6" />
-          <ReadOnlyKnob label="Force" value={params.excitation} color="#f4f4f5" />
-          <ReadOnlyKnob label="Wood" value={params.material} color="#f97316" />
+          <ReadOnlyKnob label="Pressure" value={params.excitation} color="#f4f4f5" />
+          <ReadOnlyKnob label="Resonance" value={params.material} color="#f97316" />
         </div>
 
         <button 
@@ -262,7 +274,7 @@ export const StringsEngine: React.FC = () => {
               ? 'bg-amber-500/5 border-amber-500/30 text-amber-500 shadow-[0_0_40px_rgba(245,158,11,0.1)]' 
               : 'bg-zinc-900 border-zinc-800 text-zinc-600 hover:text-zinc-400 hover:bg-zinc-800'}`}
         >
-          {isActive ? 'Silence Instrument' : 'Initialize Engine'}
+          {isActive ? 'Silence Engine' : 'Initialize String'}
         </button>
 
         <div className="mt-8 text-center">
