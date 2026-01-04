@@ -6,6 +6,7 @@ import { Roles } from './components/Roles';
 import { Contact } from './components/Contact';
 import { WorldComparison } from './components/WorldComparison';
 import { Pillars } from './components/Pillars';
+import { StringsEngine } from './components/StringsEngine';
 
 const App: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -18,6 +19,7 @@ const App: React.FC = () => {
     { id: 'pillars', title: 'Pillars' },
     { id: 'philosophy', title: 'Philosophy' },
     { id: 'loops', title: 'Loops' },
+    { id: 'instrument', title: 'Instrument' },
     { id: 'roles', title: 'Roles' },
     { id: 'contact', title: 'Contact' }
   ];
@@ -123,6 +125,12 @@ const App: React.FC = () => {
         <div id="loops" className="snap-section px-6">
           <div className="w-full max-w-5xl">
             <GenerativeLoopsSection />
+          </div>
+        </div>
+
+        <div id="instrument" className="snap-section px-6">
+          <div className="w-full max-w-5xl">
+            <StringsEngine />
           </div>
         </div>
 

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 const REGIONS = [
   { id: 'story', url: 'https://images.unsplash.com/photo-1519791883288-dc8bd696e667?auto=format&fit=crop&q=80&w=500' }, // Story
   { id: 'kitchen', url: 'https://images.unsplash.com/photo-1584346133934-a3afd2a33c4c?auto=format&fit=crop&q=80&w=500' }, // Kitchen (Pots & Pans)
-  { id: 'wisdom', url: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=500' }, // Wisdom (Steampunk Gears)
+  { id: 'wisdom', url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=500' }, // Wisdom (Intricate Metal Gears, No People)
   { id: 'songs', url: 'https://images.unsplash.com/photo-1507838153414-b4b713384a76?auto=format&fit=crop&q=80&w=500' }, // Songs (Sheet Music)
   { id: 'prophecy', url: 'https://images.unsplash.com/photo-1464802686167-b939a6910659?auto=format&fit=crop&q=80&w=500' }  // Prophecy (Stars)
 ];

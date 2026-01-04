@@ -15,9 +15,6 @@ export const MusicPhilosophy: React.FC = () => {
             <p className="text-zinc-200 serif italic text-xl md:text-2xl">
               The goal is to move from perfection to partnership.
             </p>
-            <p className="text-zinc-400 serif italic text-lg opacity-60">
-              It’s willingness.
-            </p>
           </div>
         </div>
       </div>
