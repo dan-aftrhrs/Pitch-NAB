@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 const pillars = [
@@ -30,8 +29,13 @@ const pillars = [
 
 export const Pillars: React.FC = () => {
   return (
-    <div className="space-y-16">
-      <h2 className="text-3xl md:text-4xl serif font-light text-center">Design Pillars</h2>
+    <div className="space-y-12">
+      <div className="text-center space-y-3">
+        <h2 className="text-3xl md:text-4xl serif font-light">Design Pillars</h2>
+        <p className="text-zinc-500 font-light italic text-sm">
+          These pillars are what will guide us and ground us as a team.
+        </p>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16 px-4">
         {pillars.map((p, i) => (
           <div key={i} className="space-y-3 relative">

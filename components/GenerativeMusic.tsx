@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 const SAMPLES = [
   'https://reverbmachine.com/wp-content/uploads/2022/09/eno-mfa-piano-01.mp3',
@@ -8,98 +8,153 @@ const SAMPLES = [
   'https://reverbmachine.com/wp-content/uploads/2022/09/eno-mfa-piano-05.mp3',
   'https://reverbmachine.com/wp-content/uploads/2022/09/eno-mfa-piano-06.mp3',
   'https://reverbmachine.com/wp-content/uploads/2022/09/eno-mfa-piano-07.mp3',
-  'https://reverbmachine.com/wp-content/uploads/2022/09/eno-mfa-piano-01.mp3' // Variation slot
+  'https://reverbmachine.com/wp-content/uploads/2022/09/eno-mfa-piano-01.mp3' // Repeat for 8th slot
 ];
 
 export const GenerativeMusic: React.FC = () => {
-  const [loading, setLoading] = useState(false);
-  const [buffers, setBuffers] = useState<AudioBuffer[] | null>(null);
   const [active, setActive] = useState<boolean[]>(new Array(SAMPLES.length).fill(false));
-  
-  const ctx = useRef<AudioContext | null>(null);
-  const sources = useRef<(AudioBufferSourceNode | null)[]>(new Array(SAMPLES.length).fill(null));
+  const audioRefs = useRef<(HTMLAudioElement | null)[]>(new Array(SAMPLES.length).fill(null));
+  const timeoutRefs = useRef<(number | null)[]>(new Array(SAMPLES.length).fill(null));
 
-  const initialize = async () => {
-    setLoading(true);
-    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    ctx.current = audioCtx;
-    
-    try {
-      const responses = await Promise.all(SAMPLES.map(url => fetch(url)));
-      const arrayBuffers = await Promise.all(responses.map(res => res.arrayBuffer()));
-      const decoded = await Promise.all(arrayBuffers.map(ab => audioCtx.decodeAudioData(ab)));
-      setBuffers(decoded);
-    } catch (err) {
-      console.error("Archive connection failed:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopAll();
+    };
+  }, []);
 
   const toggleFragment = (i: number) => {
-    if (!ctx.current || !buffers) return;
-    if (ctx.current.state === 'suspended') ctx.current.resume();
+    // Clear any pending delayed starts for this slot
+    if (timeoutRefs.current[i]) {
+      window.clearTimeout(timeoutRefs.current[i]!);
+      timeoutRefs.current[i] = null;
+    }
 
-    if (sources.current[i]) {
-      // STOP: If already playing, stop the source and clear the ref
-      try {
-        sources.current[i]?.stop();
-      } catch (e) {}
-      sources.current[i] = null;
-      setActive(prev => {
-        const next = [...prev];
-        next[i] = false;
-        return next;
-      });
+    let audio = audioRefs.current[i];
+
+    if (active[i] && audio) {
+      audio.pause();
+      audio.currentTime = 0;
+      
+      const nextActive = [...active];
+      nextActive[i] = false;
+      setActive(nextActive);
     } else {
-      // START: Create a new source node, set to loop, and play
-      const source = ctx.current.createBufferSource();
-      source.buffer = buffers[i];
-      source.loop = true;
-      source.connect(ctx.current.destination);
-      source.start();
-      sources.current[i] = source;
-      setActive(prev => {
-        const next = [...prev];
-        next[i] = true;
-        return next;
+      if (!audio) {
+        audio = new Audio(SAMPLES[i]);
+        audio.loop = true;
+        audioRefs.current[i] = audio;
+      }
+      
+      audio.play().catch(err => {
+        console.error("Audio playback blocked or failed:", err);
       });
+
+      const nextActive = [...active];
+      nextActive[i] = true;
+      setActive(nextActive);
     }
   };
 
-  if (!buffers) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 bg-zinc-50 border border-zinc-100 rounded-sm">
-        <button 
-          onClick={initialize}
-          disabled={loading}
-          className="px-12 py-5 bg-zinc-900 text-white text-[11px] uppercase tracking-[0.5em] hover:bg-black transition-all disabled:opacity-30 shadow-xl"
-        >
-          {loading ? 'Fetching Archive...' : 'Initialize Music Fragments'}
-        </button>
-        <p className="mt-6 text-[10px] text-zinc-400 uppercase tracking-widest font-light">
-          Requires active internet connection to stream fragments
-        </p>
-      </div>
-    );
-  }
+  const playAll = () => {
+    // Stop everything first to reset the state
+    stopAll();
+
+    const nextActive = new Array(SAMPLES.length).fill(true);
+    setActive(nextActive);
+
+    // Select one random track to start immediately
+    const immediateIndex = Math.floor(Math.random() * SAMPLES.length);
+
+    SAMPLES.forEach((url, i) => {
+      let audio = audioRefs.current[i];
+      if (!audio) {
+        audio = new Audio(url);
+        audio.loop = true;
+        audioRefs.current[i] = audio;
+      }
+
+      if (i === immediateIndex) {
+        // Start immediately
+        audio.play().catch(err => console.error(`Playback failed for ${i}:`, err));
+      } else {
+        // Start after a random interval (up to 10 seconds)
+        const delay = Math.random() * 10000;
+        const timeoutId = window.setTimeout(() => {
+          if (audioRefs.current[i]) {
+            audioRefs.current[i]!.play().catch(err => console.error(`Delayed playback failed for ${i}:`, err));
+          }
+          timeoutRefs.current[i] = null;
+        }, delay);
+        timeoutRefs.current[i] = timeoutId;
+      }
+    });
+  };
+
+  const stopAll = () => {
+    // Clear all pending timeouts
+    timeoutRefs.current.forEach((id, i) => {
+      if (id) window.clearTimeout(id);
+      timeoutRefs.current[i] = null;
+    });
+
+    // Pause all audio
+    audioRefs.current.forEach(audio => {
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+    });
+    
+    setActive(new Array(SAMPLES.length).fill(false));
+  };
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-      {buffers.map((_, i) => (
-        <button
-          key={i}
-          onClick={() => toggleFragment(i)}
-          className={`relative h-40 border rounded-sm flex flex-col items-center justify-center transition-all duration-700
-            ${active[i] ? 'bg-zinc-900 border-zinc-800 text-white shadow-2xl scale-[1.02] z-10' : 'bg-white border-zinc-100 text-zinc-300 hover:border-zinc-300 hover:text-zinc-600'}`}
-        >
-          <span className="text-[9px] uppercase tracking-[0.3em] mb-2 font-light opacity-50">Archive</span>
-          <span className={`serif italic text-3xl transition-colors ${active[i] ? 'text-white' : 'text-zinc-800'}`}>0{i + 1}</span>
-          {active[i] && (
-            <div className="absolute bottom-6 w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse shadow-[0_0_10px_rgba(251,191,36,0.6)]" />
-          )}
-        </button>
-      ))}
+    <div className="space-y-16">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {SAMPLES.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => toggleFragment(i)}
+            className={`relative h-44 border rounded-sm flex flex-col items-center justify-center transition-all duration-500
+              ${active[i] 
+                ? 'bg-zinc-900 border-zinc-800 text-white shadow-2xl scale-[1.02] z-10' 
+                : 'bg-white border-zinc-100 text-zinc-300 hover:border-zinc-300 hover:text-zinc-600'}`}
+          >
+            <span className="text-[9px] uppercase tracking-[0.4em] mb-3 font-light opacity-40">
+              {active[i] ? 'Streaming' : 'Standby'}
+            </span>
+            <span className={`serif italic text-4xl transition-colors duration-700 ${active[i] ? 'text-white' : 'text-zinc-800'}`}>
+              0{i + 1}
+            </span>
+            
+            {active[i] && (
+              <div className="absolute bottom-8 flex gap-1">
+                <div className="w-1 h-1 bg-amber-400 rounded-full animate-ping" />
+                <div className="w-1 h-1 bg-amber-400 rounded-full animate-pulse delay-75" />
+                <div className="w-1 h-1 bg-amber-400 rounded-full animate-ping delay-150" />
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex flex-col items-center gap-10">
+        <div className="flex flex-wrap justify-center gap-6">
+          <button 
+            onClick={playAll}
+            className="px-10 py-4 bg-zinc-900 text-white text-[10px] uppercase tracking-[0.4em] hover:bg-black transition-all shadow-lg rounded-sm"
+          >
+            Engage All
+          </button>
+          <button 
+            onClick={stopAll}
+            className="px-10 py-4 bg-white border border-zinc-200 text-zinc-500 text-[10px] uppercase tracking-[0.4em] hover:text-zinc-900 hover:border-zinc-900 transition-all rounded-sm"
+          >
+            Silence All
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

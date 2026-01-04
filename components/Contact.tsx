@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Section } from './Section';
 
@@ -22,10 +21,31 @@ export const Contact: React.FC = () => {
         </div>
 
         <div className="pt-8">
-          <div className="flex justify-center gap-12 text-zinc-400 text-sm font-light">
-             <span className="hover:text-zinc-800 cursor-pointer transition-colors border-b border-transparent hover:border-zinc-200 pb-1">Discord</span>
-             <span className="hover:text-zinc-800 cursor-pointer transition-colors border-b border-transparent hover:border-zinc-200 pb-1">Instagram</span>
-             <span className="hover:text-zinc-800 cursor-pointer transition-colors border-b border-transparent hover:border-zinc-200 pb-1">Journal</span>
+          <div className="flex flex-wrap justify-center gap-x-12 gap-y-6 text-zinc-400 text-sm font-light">
+             <a 
+               href="https://docs.google.com/document/d/1LCtyX4wMcUDVZK5skreg53vPPG-S-eqK76t17cG-Neo/edit?tab=t.0#heading=h.sjff5351ahfi" 
+               target="_blank" 
+               rel="noopener noreferrer" 
+               className="hover:text-zinc-800 cursor-pointer transition-colors border-b border-transparent hover:border-zinc-200 pb-1"
+             >
+               Game Design Document
+             </a>
+             <a 
+               href="https://docs.google.com/spreadsheets/d/18Hp2zO7bkQmQjpg9K_u3dZeu1rfU3MHAx359nx_uh8k/edit?gid=0#gid=0" 
+               target="_blank" 
+               rel="noopener noreferrer" 
+               className="hover:text-zinc-800 cursor-pointer transition-colors border-b border-transparent hover:border-zinc-200 pb-1"
+             >
+               Research
+             </a>
+             <a 
+               href="https://www.notion.so/afterhourscreative/not-a-Bard-cd7469681a484183b699c0e87c0352f5" 
+               target="_blank" 
+               rel="noopener noreferrer" 
+               className="hover:text-zinc-800 cursor-pointer transition-colors border-b border-transparent hover:border-zinc-200 pb-1"
+             >
+               Notion
+             </a>
           </div>
         </div>
       </div>

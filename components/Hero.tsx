@@ -1,9 +1,8 @@
-
 import React from 'react';
 
 export const Hero: React.FC = () => {
   return (
-    <section className="relative h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-[#fdfcf8]">
+    <section className="relative h-screen w-full flex flex-col items-center justify-start overflow-hidden bg-[#fdfcf8]">
       {/* Background Layer */}
       <div className="absolute inset-0 z-0">
         <img 
@@ -25,8 +24,8 @@ export const Hero: React.FC = () => {
         </div>
       </div>
 
-      {/* Hero Text - Centered vertically and scaled down */}
-      <div className="relative z-30 text-center space-y-4 md:space-y-6 fade-in px-6">
+      {/* Hero Text */}
+      <div className="relative z-30 text-center space-y-4 md:space-y-6 px-6 pt-[22vh] md:pt-[25vh]">
         <div className="space-y-2">
           <h1 className="text-5xl md:text-8xl font-light serif text-white tracking-tight drop-shadow-[0_10px_25px_rgba(0,0,0,0.8)]">
             notaBard
@@ -41,7 +40,7 @@ export const Hero: React.FC = () => {
       </div>
 
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-40 z-30">
-        <div className="w-px h-12 bg-white animate-pulse" />
+        <div className="w-px h-12 bg-white" />
       </div>
     </section>
   );
