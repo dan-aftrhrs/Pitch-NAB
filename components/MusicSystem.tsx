@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Section } from './Section';
 import { GenerativeMusic } from './GenerativeMusic';
@@ -44,20 +43,20 @@ export const MusicSystem: React.FC = () => {
         {/* INTERACTIVE SECTION */}
         <div className="space-y-16">
           <div className="text-center space-y-6 max-w-2xl mx-auto">
-             <h3 className="text-3xl md:text-4xl serif italic font-light">Generative Music</h3>
+             <h3 className="text-3xl md:text-4xl serif italic font-light">Generative Loops</h3>
              <div className="space-y-4 text-zinc-600 font-light leading-relaxed">
                <p>
-                 Taking from Brian Eno's Aport 1, there are 8 loops that are in different length and when looped it creates a beautiful melody that feels alive. The loop doesn't feel like a 'loop'.
+                 This system utilizes 8 independent piano loops. Because each fragment cycles at its own specific length, they slowly drift in and out of phase with each other.
                </p>
                <p>
-                 You can also play with the slider to see how <i>the sound</i> of the note can be changed in game. This is especially useful if we're using in-game materials to alter the sound of the cello.
+                 Initialize the archive to load the fragments, then toggle them on to hear a composition that evolves indefinitely without ever repeating exactly.
                </p>
              </div>
              <p className="text-[10px] uppercase tracking-[0.4em] text-zinc-400 pt-8 font-medium">
                Interactive Parable #01 — Systems over Symmetry
              </p>
           </div>
-          <div className="bg-white p-8 md:p-16 border border-zinc-100 rounded-sm shadow-sm">
+          <div className="bg-white p-6 md:p-12 border border-zinc-100 rounded-sm shadow-sm">
             <GenerativeMusic />
           </div>
         </div>
