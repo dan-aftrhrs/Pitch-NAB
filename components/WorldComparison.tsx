@@ -9,16 +9,16 @@ export const WorldComparison: React.FC = () => {
          onMouseEnter={() => setIsSpiritual(true)}
          onMouseLeave={() => setIsSpiritual(false)}>
       
-      {/* Human World (Dark/Shadowy) - Default State */}
-      <div className="absolute inset-0 transition-opacity duration-1000 ease-in-out bg-zinc-950"
+      {/* Human World (Muted/Shadowy) - Default State */}
+      <div className="absolute inset-0 transition-opacity duration-1000 ease-in-out bg-zinc-900"
            style={{ opacity: isSpiritual ? 0 : 1 }}>
         <img 
           src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=2000" 
           alt="Human World" 
-          className="w-full h-full object-cover grayscale brightness-[0.3] contrast-125"
+          className="w-full h-full object-cover grayscale brightness-[0.5] contrast-[1.1]"
         />
-        <div className="absolute inset-0 bg-zinc-900/60 mix-blend-multiply" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-zinc-900/30 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
         <div className="absolute inset-0 flex items-center justify-center">
           <p className="serif italic text-3xl md:text-5xl text-white drop-shadow-2xl tracking-wide opacity-80 group-hover:opacity-0 transition-opacity duration-500">
             The Human World

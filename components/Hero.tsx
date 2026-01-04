@@ -3,7 +3,7 @@ import React from 'react';
 
 export const Hero: React.FC = () => {
   return (
-    <section className="relative h-screen w-full flex flex-col items-center justify-start overflow-hidden bg-[#fdfcf8]">
+    <section className="relative h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-[#fdfcf8]">
       {/* Background Layer */}
       <div className="absolute inset-0 z-0">
         <img 
@@ -25,17 +25,17 @@ export const Hero: React.FC = () => {
         </div>
       </div>
 
-      {/* Hero Text - Positioned at 25vh (halfway between 0 and 50) */}
-      <div className="relative z-30 text-center space-y-4 md:space-y-8 fade-in px-6 pt-[25vh]">
+      {/* Hero Text - Centered vertically and scaled down */}
+      <div className="relative z-30 text-center space-y-4 md:space-y-6 fade-in px-6">
         <div className="space-y-2">
-          <h1 className="text-6xl md:text-9xl font-light serif text-white tracking-tight drop-shadow-2xl">
+          <h1 className="text-5xl md:text-8xl font-light serif text-white tracking-tight drop-shadow-[0_10px_25px_rgba(0,0,0,0.8)]">
             notaBard
           </h1>
-          <p className="text-sm md:text-lg tracking-[0.3em] uppercase text-white/60 font-light">
+          <p className="text-xs md:text-base tracking-[0.4em] uppercase text-white/70 font-light drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
             Listen First, Act Second
           </p>
         </div>
-        <p className="text-base md:text-xl font-light italic text-white/90 serif drop-shadow-md max-w-[320px] md:max-w-xl mx-auto leading-relaxed">
+        <p className="text-sm md:text-lg font-light italic text-white/90 serif drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] max-w-[280px] md:max-w-lg mx-auto leading-relaxed">
           Follow along the musician's journey to learn to keep in step.
         </p>
       </div>

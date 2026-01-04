@@ -29,11 +29,6 @@ export const MusicSystem: React.FC = () => {
                 </p>
               </div>
             </div>
-            <div className="pt-6 border-t border-zinc-800">
-              <p className="text-zinc-500 text-[10px] uppercase tracking-[0.3em] font-medium">
-                Music as a System — The Shema Protocol
-              </p>
-            </div>
           </div>
           <div className="md:w-1/2 flex justify-center items-center">
               <div className="relative flex items-center justify-center w-72 h-72">
@@ -48,12 +43,17 @@ export const MusicSystem: React.FC = () => {
 
         {/* INTERACTIVE SECTION */}
         <div className="space-y-16">
-          <div className="text-center space-y-4 max-w-2xl mx-auto">
-             <h3 className="text-3xl md:text-4xl serif italic font-light">Brian Eno</h3>
-             <p className="text-zinc-600 font-light leading-relaxed">
-               Interact with the fragments below. Activating the "Generative Cloud" allows the system to drift through five simultaneous tracks, replacing them as they conclude to ensure the conversation never stays silent.
-             </p>
-             <p className="text-[10px] uppercase tracking-[0.4em] text-zinc-400 pt-10 font-medium">
+          <div className="text-center space-y-6 max-w-2xl mx-auto">
+             <h3 className="text-3xl md:text-4xl serif italic font-light">Generative Music</h3>
+             <div className="space-y-4 text-zinc-600 font-light leading-relaxed">
+               <p>
+                 Taking from Brian Eno's Aport 1, there are 8 loops that are in different length and when looped it creates a beautiful melody that feels alive. The loop doesn't feel like a 'loop'.
+               </p>
+               <p>
+                 You can also play with the slider to see how <i>the sound</i> of the note can be changed in game. This is especially useful if we're using in-game materials to alter the sound of the cello.
+               </p>
+             </div>
+             <p className="text-[10px] uppercase tracking-[0.4em] text-zinc-400 pt-8 font-medium">
                Interactive Parable #01 — Systems over Symmetry
              </p>
           </div>
