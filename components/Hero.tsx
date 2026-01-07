@@ -30,11 +30,11 @@ export const Hero: React.FC = () => {
           <h1 className="text-5xl md:text-8xl font-light serif text-white tracking-tight drop-shadow-[0_10px_25px_rgba(0,0,0,0.8)]">
             notaBard
           </h1>
-          <p className="text-xs md:text-base tracking-[0.4em] uppercase text-zinc-950 font-bold drop-shadow-[0_1px_4px_rgba(255,255,255,0.4)]">
+          <p className="text-xs md:text-base tracking-[0.4em] uppercase text-zinc-900 font-bold drop-shadow-[0_0_1px_rgba(255,255,255,0.8)]">
             Listen First, Act Second
           </p>
         </div>
-        <p className="text-sm md:text-lg font-medium italic text-zinc-900 serif max-w-[280px] md:max-w-lg mx-auto leading-relaxed">
+        <p className="text-sm md:text-lg font-medium italic text-zinc-800 serif max-w-[280px] md:max-w-lg mx-auto leading-relaxed">
           Follow along the musician's journey to learn to keep in step.
         </p>
       </div>

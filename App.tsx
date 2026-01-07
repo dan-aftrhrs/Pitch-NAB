@@ -182,13 +182,13 @@ const App: React.FC = () => {
               <p className="text-3xl md:text-5xl serif italic font-light">Keeping in step is the primary mechanic.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-              <div className="space-y-2">
+              <div>
                 <span className="text-xs uppercase tracking-[0.4em] text-amber-500 font-bold">Listen</span>
               </div>
-              <div className="space-y-2">
+              <div>
                 <span className="text-xs uppercase tracking-[0.4em] text-amber-500 font-bold">Respond</span>
               </div>
-              <div className="space-y-2">
+              <div>
                 <span className="text-xs uppercase tracking-[0.4em] text-amber-500 font-bold">Explore</span>
               </div>
             </div>

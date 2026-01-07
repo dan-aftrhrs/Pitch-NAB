@@ -38,7 +38,7 @@ export const Contact: React.FC = () => {
 
              <div className="flex flex-col items-center gap-2 max-w-[200px]">
                <a 
-                 href="https://notion.so/notabard" 
+                 href="https://www.notion.so/not-a-Bard-cd7469681a484183b699c0e87c0352f5?source=copy_link" 
                  target="_blank" 
                  rel="noopener noreferrer" 
                  className="text-zinc-800 hover:text-amber-600 font-medium transition-colors border-b border-zinc-200 pb-1"

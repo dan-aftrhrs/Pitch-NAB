@@ -16,7 +16,7 @@ export const Roles: React.FC = () => {
       
       <div className="space-y-8 text-center max-w-2xl mx-auto px-6">
         <p className="text-zinc-600 font-light leading-relaxed text-sm md:text-base">
-          Building notaBard requires a tapestry of disciplines. We envision a community where each area has a steward to guide the vision, supported by passionate collaborators. Whether you're a solo artisan or a team player, there’s space for your craft to grow within this collective.
+          The following are the disciplines in gaming this game. My hope is that there will be a primary leader and helpers for each team. The shape of the team will grow naturally. If working solo make sense to you, do it. If you need a team, it's a perfect opportunity to collaborate.
         </p>
         
         <div className="p-6 bg-zinc-50 border border-zinc-100 rounded-sm italic text-zinc-500 text-sm leading-relaxed">

@@ -28,11 +28,10 @@ const ReadOnlyKnob: React.FC<KnobProps> = ({ label, value, color }) => {
   );
 };
 
-// Constant frequency for C4
 const C4_FREQ = 261.63;
 
 export const StringsEngine: React.FC = () => {
-  const [morph, setMorph] = useState(0.5); // 0 = Piano, 1 = Cello
+  const [morph, setMorph] = useState(0.5); 
   const [isActive, setIsActive] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -44,18 +43,41 @@ export const StringsEngine: React.FC = () => {
   const morphRef = useRef(morph);
   const lastTriggerTime = useRef(0);
 
-  // Sync ref for interval access
   useEffect(() => {
     morphRef.current = morph;
   }, [morph]);
 
-  // Parameter Mapping (Non-linear for smoother character shifts)
-  const params = {
-    tension: 0.85 - (morph * 0.65),      // 0.85 (Piano) -> 0.2 (Cello)
-    damping: 0.15 + (morph * 0.8),      // 0.15 (Piano) -> 0.95 (Cello)
-    excitation: 0.8 - (morph * 0.2),    // 0.8 (Piano) -> 0.6 (Cello)
-    material: 0.1 + (morph * 0.85)      // 0.1 (Piano) -> 0.95 (Cello)
+  // Parameter Mapping (Re-aligned based on user perception)
+  // Left (0.0): Muted Piano | Middle (0.5): Steel Guitar | Right (1.0): Bowed Cello
+  const getParams = (m: number) => {
+    if (m < 0.35) {
+      // MUTED PIANO (Woody, highly damped, percussive)
+      return {
+        tension: 0.85,     
+        damping: 0.95,     
+        excitation: 0.95,  
+        material: 0.15     
+      };
+    } else if (m < 0.65) {
+      // STEEL GUITAR (Resonant, bright, metallic)
+      return {
+        tension: 0.75,     
+        damping: 0.3,      
+        excitation: 0.7,   
+        material: 0.4      
+      };
+    } else {
+      // BOWED CELLO (Low tension, slow resonance, body focus)
+      return {
+        tension: 0.25,     
+        damping: 0.15,     
+        excitation: 0.85,  
+        material: 0.95     
+      };
+    }
   };
+
+  const params = getParams(morph);
 
   const initAudio = async () => {
     if (audioCtx.current) return;
@@ -75,13 +97,13 @@ export const StringsEngine: React.FC = () => {
       const p = node.parameters;
       const now = ctx.currentTime;
       p.get('freq')?.setValueAtTime(C4_FREQ, now);
-      updateNodeParams(params);
+      updateNodeParams(getParams(morph));
     } catch (e) {
       console.error("Failed to load worklet", e);
     }
   };
 
-  const updateNodeParams = (pValues: typeof params) => {
+  const updateNodeParams = (pValues: ReturnType<typeof getParams>) => {
     if (!workletNode.current) return;
     const p = workletNode.current.parameters;
     const now = audioCtx.current!.currentTime;
@@ -95,7 +117,7 @@ export const StringsEngine: React.FC = () => {
     if (isLoaded) updateNodeParams(params);
   }, [morph, isLoaded]);
 
-  // Rhythm Engine: Improved to handle piano double-triggers and cello sustain reliably
+  // Rhythm Engine
   useEffect(() => {
     if (isActive && isLoaded) {
       const trigger = () => {
@@ -103,43 +125,39 @@ export const StringsEngine: React.FC = () => {
         const gate = workletNode.current.parameters.get('gate');
         const now = audioCtx.current.currentTime;
         
-        // Debounce to prevent double notes
-        if (now - lastTriggerTime.current < 0.2) return;
-        lastTriggerTime.current = now;
-
         const currentMorph = morphRef.current;
 
-        if (currentMorph < 0.7) {
-          // Piano Mode: Crisp attack and decay
+        if (currentMorph < 0.35) {
+          // Muted Piano: Quick percussive impact
           gate?.cancelScheduledValues(now);
           gate?.setValueAtTime(0, now);
-          gate?.setTargetAtTime(1.0, now + 0.002, 0.008);
-          const release = 0.05 + (0.15 * currentMorph);
-          gate?.setTargetAtTime(0, now + release, 0.05);
-        } else {
-          // Cello Mode: Sustained bow friction
+          gate?.setTargetAtTime(1.0, now + 0.002, 0.005);
+          gate?.setTargetAtTime(0, now + 0.05, 0.01);
+        } else if (currentMorph < 0.65) {
+          // Steel Guitar: Resonant pluck
           gate?.cancelScheduledValues(now);
-          // Initial pressure kick to overcome starting friction
-          gate?.setValueAtTime(1.3, now); 
-          gate?.setTargetAtTime(1.0, now + 0.2, 0.4);
+          gate?.setValueAtTime(0, now);
+          gate?.setTargetAtTime(0.9, now + 0.005, 0.02);
+          gate?.setTargetAtTime(0, now + 0.2, 0.15);
+        } else {
+          // Bowed Cello: Breathing "swelling" bow stroke
+          gate?.cancelScheduledValues(now);
+          gate?.setValueAtTime(0, now);
+          gate?.setTargetAtTime(1.2, now + 0.15, 0.35); 
+          gate?.setTargetAtTime(0, now + 1.5, 0.7);     
         }
       };
 
-      const isPiano = morph < 0.7;
-
-      if (isPiano) {
-        if (rhythmInterval.current) clearInterval(rhythmInterval.current);
-        rhythmInterval.current = window.setInterval(trigger, 1800);
-        trigger();
-      } else {
-        if (rhythmInterval.current) clearInterval(rhythmInterval.current);
-        trigger(); // Immediate sustain
-      }
+      const tempo = morph < 0.65 ? 1800 : 4500; 
+      
+      if (rhythmInterval.current) clearInterval(rhythmInterval.current);
+      rhythmInterval.current = window.setInterval(trigger, tempo);
+      trigger();
     } else {
       if (rhythmInterval.current) clearInterval(rhythmInterval.current);
     }
     return () => { if (rhythmInterval.current) clearInterval(rhythmInterval.current); };
-  }, [isActive, isLoaded, morph < 0.7]); // Only re-run when mode changes
+  }, [isActive, isLoaded, morph < 0.35, morph < 0.65]);
 
   const toggleEngine = async () => {
     if (!isLoaded) await initAudio();
@@ -155,7 +173,6 @@ export const StringsEngine: React.FC = () => {
     }
   };
 
-  // Visualization Loop
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -186,8 +203,7 @@ export const StringsEngine: React.FC = () => {
       for (let x = 0; x <= width; x++) {
         const normalizedX = x / width;
         const envelope = Math.sin(normalizedX * Math.PI);
-        const jitter = morph > 0.6 ? (Math.random() - 0.5) * 0.5 : 0;
-        const y = centerY + Math.sin(normalizedX * Math.PI * freqVis + phase) * (amplitude + jitter) * envelope;
+        const y = centerY + Math.sin(normalizedX * Math.PI * freqVis + phase) * amplitude * envelope;
         ctx.lineTo(x, y);
       }
       ctx.stroke();
@@ -210,7 +226,7 @@ export const StringsEngine: React.FC = () => {
       <div className="text-center space-y-6 max-w-xl px-6">
         <h3 className="text-4xl md:text-5xl serif italic font-light tracking-tight">The String Engine <span className="text-xs uppercase tracking-widest text-zinc-400 align-middle ml-2">(Experimental)</span></h3>
         <p className="text-zinc-500 font-light text-sm md:text-base leading-relaxed">
-          Physical modeling of a single C4 string. Move from the brittle, percussive strike of a <strong>Muted Piano</strong> to the deep, resonant sustain of a <strong>Bowed Cello</strong>.
+          Based on the Karplus-Strong string synthesis algorithm. Morph through three profiles: a woody muted piano, a metallic steel guitar, and the deep, rhythmic stroke of a bowed cello.
           <br/><span className="text-[10px] text-zinc-400 italic">May not be fully supported on all mobile devices.</span>
         </p>
       </div>
@@ -218,70 +234,46 @@ export const StringsEngine: React.FC = () => {
       <div className="w-full max-w-md bg-zinc-950 rounded-[2.5rem] p-10 border border-zinc-800 shadow-[0_40px_100px_rgba(0,0,0,0.6)] relative overflow-hidden group">
         <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
 
-        {/* OLED Visualizer */}
         <div className="bg-black w-full aspect-[16/9] rounded-2xl mb-10 border border-zinc-900 flex flex-col items-center justify-center relative overflow-hidden shadow-2xl">
-          <canvas 
-            ref={canvasRef} 
-            width={400} 
-            height={200} 
-            className="w-full h-full opacity-90"
-          />
-          
+          <canvas ref={canvasRef} width={400} height={200} className="w-full h-full opacity-90" />
           <div className="absolute bottom-4 left-6 right-6 flex justify-between items-end">
             <div className="space-y-1">
               <div className="text-[8px] uppercase tracking-[0.3em] font-bold text-zinc-700">Timbre_Profile</div>
               <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-amber-500/80">
-                {morph < 0.3 ? 'STEEL_STRING' : morph > 0.7 ? 'STRINGS' : 'MUTED_PIANO'}
+                {morph < 0.35 ? 'MUTED_PIANO' : morph > 0.65 ? 'BOWED_CELLO' : 'STEEL_GUITAR'}
               </div>
             </div>
             <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-amber-500 animate-pulse' : 'bg-zinc-800'}`} />
           </div>
-          
-          <div className="absolute top-4 right-6 text-[8px] uppercase tracking-widest font-bold text-zinc-800">
-            C4 — RESONANT
-          </div>
         </div>
 
-        {/* Morph Slider */}
         <div className="mb-10 space-y-4 px-2">
            <div className="flex justify-between text-[8px] uppercase tracking-[0.3em] font-bold text-zinc-500">
-              <span>Muted Piano</span>
-              <span>Bowed Cello</span>
+              <span>Piano</span>
+              <span>Guitar</span>
+              <span>Cello</span>
            </div>
            <input 
-             type="range" 
-             min="0" 
-             max="1" 
-             step="0.001" 
-             value={morph}
+             type="range" min="0" max="1" step="0.001" value={morph}
              onChange={(e) => setMorph(parseFloat(e.target.value))}
              className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-amber-500 hover:accent-amber-400 transition-all"
            />
         </div>
 
-        {/* Read-Only Visual Knobs */}
         <div className="grid grid-cols-4 gap-4 mb-10 opacity-50">
           <ReadOnlyKnob label="Tension" value={params.tension} color="#22c55e" />
           <ReadOnlyKnob label="Damping" value={params.damping} color="#3b82f6" />
           <ReadOnlyKnob label="Pressure" value={params.excitation} color="#f4f4f5" />
-          <ReadOnlyKnob label="Resonance" value={params.material} color="#f97316" />
+          <ReadOnlyKnob label="Body" value={params.material} color="#f97316" />
         </div>
 
-        <button 
-          onClick={toggleEngine}
+        <button onClick={toggleEngine}
           className={`w-full py-5 rounded-2xl font-bold text-[11px] uppercase tracking-[0.5em] transition-all duration-700 border
             ${isActive 
               ? 'bg-amber-500/5 border-amber-500/30 text-amber-500 shadow-[0_0_40px_rgba(245,158,11,0.1)]' 
-              : 'bg-zinc-900 border-zinc-800 text-zinc-600 hover:text-zinc-400 hover:bg-zinc-800'}`}
-        >
+              : 'bg-zinc-900 border-zinc-800 text-zinc-600 hover:text-zinc-400 hover:bg-zinc-800'}`}>
           {isActive ? 'Silence Engine' : 'Initialize String'}
         </button>
-
-        <div className="mt-8 text-center">
-          <span className="text-[7px] uppercase tracking-[0.6em] text-zinc-700 font-bold">
-            Phys_Mod • MORPH_ENGINE • AFTRHRS_DSP
-          </span>
-        </div>
       </div>
     </div>
   );
