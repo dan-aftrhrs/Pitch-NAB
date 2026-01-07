@@ -7,6 +7,8 @@ import { Contact } from './components/Contact';
 import { WorldComparison } from './components/WorldComparison';
 import { Pillars } from './components/Pillars';
 import { StringsEngine } from './components/StringsEngine';
+import { Movements } from './components/Movements';
+import { Visuals } from './components/Visuals';
 
 const App: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -15,12 +17,17 @@ const App: React.FC = () => {
   const sections = [
     { id: 'hero', title: 'Home' },
     { id: 'vision', title: 'The Vision' },
+    { id: 'story', title: 'The Story' },
+    { id: 'movements', title: 'The Five Movements' },
     { id: 'world', title: 'Two Worlds' },
-    { id: 'pillars', title: 'Pillars' },
+    { id: 'music-intro', title: 'The Music' },
     { id: 'philosophy', title: 'Philosophy' },
     { id: 'loops', title: 'Loops' },
     { id: 'instrument', title: 'Instrument' },
+    { id: 'gameplay', title: 'GamePlay' },
+    { id: 'visuals', title: 'Visuals' },
     { id: 'roles', title: 'Roles' },
+    { id: 'pillars', title: 'Pillars' },
     { id: 'contact', title: 'Contact' }
   ];
 
@@ -45,7 +52,7 @@ const App: React.FC = () => {
     document.querySelectorAll('.snap-section').forEach((el) => observer.observe(el));
 
     return () => observer.disconnect();
-  }, [activeSection]);
+  }, [activeSection, sections]);
 
   const scrollToSection = (index: number) => {
     const targetId = sections[index].id;
@@ -103,16 +110,50 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        <div id="world" className="snap-section px-6">
+        <div id="story" className="snap-section px-6 bg-zinc-50/50">
+          <div className="max-w-3xl mx-auto text-center space-y-10">
+            <h2 className="text-sm uppercase tracking-[0.4em] text-zinc-400">The Story</h2>
+            <div className="space-y-8">
+              <p className="text-3xl md:text-5xl serif font-light text-zinc-900 leading-tight">
+                A cellist from Melbourne <br/>
+                <span className="italic text-amber-900/80">meets a carpenter and a cat.</span>
+              </p>
+              <div className="max-w-2xl mx-auto text-zinc-600 font-light leading-relaxed space-y-6 text-left border-l-2 border-amber-500/20 pl-8">
+                <p>
+                  Eos is a cellist busking for survival in Melbourne, close to the edge of homelessness. When a selfless choice breaks his instrument, he is pulled into the <strong>Other World</strong>—a spiritual reality mirroring our own, currently being consumed by a corruption of <strong>forgetfulness</strong>.
+                </p>
+                <p>
+                  In a workshop beyond time, the <strong>Son (the Carpenter)</strong> gifts Eos a new cello carved from magical wood, capable of resonating with the <strong>King's</strong> hidden rhythms. 
+                </p>
+                <p className="italic text-zinc-500">
+                  Chosen not for his talent, but for his heart, Eos must gather the internalized wisdom of the Elders to restore memory to a fading world.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="movements" className="snap-section px-6">
+          <div className="w-full max-w-5xl">
+            <Movements />
+          </div>
+        </div>
+
+        <div id="world" className="snap-section px-6 bg-zinc-50/50">
           <div className="w-full max-w-5xl space-y-12">
             <h2 className="text-3xl md:text-4xl serif font-light text-center">Two worlds, One reality.</h2>
             <WorldComparison />
           </div>
         </div>
 
-        <div id="pillars" className="snap-section px-6">
-          <div className="w-full max-w-5xl overflow-y-auto max-h-[90vh] py-12 hide-scrollbar">
-            <Pillars />
+        <div id="music-intro" className="snap-section px-6">
+          <div className="max-w-2xl mx-auto text-center space-y-10">
+             <h2 className="text-sm uppercase tracking-[0.4em] text-zinc-400">The Music</h2>
+             <p className="text-3xl md:text-4xl serif font-light text-zinc-900">The world responds to the player.</p>
+             <div className="w-px h-24 bg-zinc-200 mx-auto" />
+             <p className="text-zinc-500 font-light italic max-w-lg mx-auto leading-relaxed">
+               In notaBard, audio is alive. The music is designed in systems and it allows for emergent creative music responding to the player's every movement.
+             </p>
           </div>
         </div>
 
@@ -134,9 +175,41 @@ const App: React.FC = () => {
           </div>
         </div>
 
+        <div id="gameplay" className="snap-section px-6 bg-zinc-900 text-white">
+          <div className="max-w-3xl mx-auto text-center space-y-16">
+            <div className="space-y-4">
+              <h2 className="text-sm uppercase tracking-[0.4em] text-zinc-500">GamePlay</h2>
+              <p className="text-3xl md:text-5xl serif italic font-light">Keeping in step is the primary mechanic.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+              <div className="space-y-2">
+                <span className="text-xs uppercase tracking-[0.4em] text-amber-500 font-bold">Listen</span>
+              </div>
+              <div className="space-y-2">
+                <span className="text-xs uppercase tracking-[0.4em] text-amber-500 font-bold">Respond</span>
+              </div>
+              <div className="space-y-2">
+                <span className="text-xs uppercase tracking-[0.4em] text-amber-500 font-bold">Explore</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="visuals" className="snap-section px-6 bg-[#fdfcf8]">
+          <div className="w-full max-w-5xl">
+            <Visuals />
+          </div>
+        </div>
+
         <div id="roles" className="snap-section px-6">
           <div className="w-full max-w-5xl">
             <Roles />
+          </div>
+        </div>
+
+        <div id="pillars" className="snap-section px-6">
+          <div className="w-full max-w-5xl overflow-y-auto max-h-[90vh] py-12 hide-scrollbar">
+            <Pillars />
           </div>
         </div>
 

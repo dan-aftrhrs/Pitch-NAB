@@ -231,7 +231,7 @@ export const StringsEngine: React.FC = () => {
             <div className="space-y-1">
               <div className="text-[8px] uppercase tracking-[0.3em] font-bold text-zinc-700">Timbre_Profile</div>
               <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-amber-500/80">
-                {morph < 0.3 ? 'SOFT_HAMMER' : morph > 0.7 ? 'DEEP_CELLO' : 'WOOD_RESONANCE'}
+                {morph < 0.3 ? 'STEEL_STRING' : morph > 0.7 ? 'STRINGS' : 'MUTED_PIANO'}
               </div>
             </div>
             <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-amber-500 animate-pulse' : 'bg-zinc-800'}`} />

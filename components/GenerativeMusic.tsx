@@ -46,9 +46,14 @@ export const GenerativeMusic: React.FC = () => {
         audioRefs.current[i] = audio;
       }
       
-      audio.play().catch(err => {
-        console.error("Audio playback blocked or failed:", err);
-      });
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(err => {
+          if (err.name !== 'AbortError') {
+            console.error("Audio playback failed:", err);
+          }
+        });
+      }
 
       const nextActive = [...active];
       nextActive[i] = true;
@@ -76,13 +81,28 @@ export const GenerativeMusic: React.FC = () => {
 
       if (i === immediateIndex) {
         // Start immediately
-        audio.play().catch(err => console.error(`Playback failed for ${i}:`, err));
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(err => {
+            if (err.name !== 'AbortError') {
+              console.error(`Playback failed for ${i}:`, err);
+            }
+          });
+        }
       } else {
         // Start after a random interval (up to 10 seconds)
         const delay = Math.random() * 10000;
         const timeoutId = window.setTimeout(() => {
-          if (audioRefs.current[i]) {
-            audioRefs.current[i]!.play().catch(err => console.error(`Delayed playback failed for ${i}:`, err));
+          const delayedAudio = audioRefs.current[i];
+          if (delayedAudio) {
+            const playPromise = delayedAudio.play();
+            if (playPromise !== undefined) {
+              playPromise.catch(err => {
+                if (err.name !== 'AbortError') {
+                  console.error(`Delayed playback failed for ${i}:`, err);
+                }
+              });
+            }
           }
           timeoutRefs.current[i] = null;
         }, delay);
