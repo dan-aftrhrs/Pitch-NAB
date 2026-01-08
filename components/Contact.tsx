@@ -15,9 +15,6 @@ export const Contact: React.FC = () => {
             <p className="text-zinc-400 italic font-light text-lg">
               Thanks for reading!
             </p>
-            <p className="text-zinc-500 font-medium tracking-widest uppercase text-xs pt-4">
-              dan.aftrhrs@gmail.com
-            </p>
           </div>
         </div>
 

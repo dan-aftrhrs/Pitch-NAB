@@ -25,7 +25,7 @@ export const Visuals: React.FC = () => {
       <div className="text-center space-y-4">
         <h2 className="text-3xl md:text-4xl serif font-light">Visual and Art</h2>
         <p className="text-zinc-500 font-light max-w-lg mx-auto italic leading-relaxed text-sm md:text-base px-6">
-          We're going for wonder and beauty. Hand drawn art (pixel art or otherwise) and procedurally generated effects.
+          We're going for wonder and beauty. Hand drawn art (pixel art or otherwise) and procedurally generated effects. Here are some inspirations:
         </p>
       </div>
 
